@@ -22,7 +22,7 @@ const g = globalThis as unknown as { __db?: Promise<Runner> };
 async function init(): Promise<Runner> {
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (url) {
-    const sql = postgres(url, { ssl: url.includes('localhost') ? false : 'require', max: 5, idle_timeout: 20 });
+    const sql = postgres(url, { ssl: url.includes('localhost') ? false : 'require', max: 5, idle_timeout: 20, prepare: false });
     await sql.unsafe(SCHEMA);
     return async (text, params = []) => (await sql.unsafe(text, params as any[])) as unknown as Row[];
   }
