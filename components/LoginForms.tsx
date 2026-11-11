@@ -41,11 +41,11 @@ export function AdminLogin() {
   return (
     <form action={action} className="stack">
       <label className="field">
-        <span>Dashboard password</span>
+        <span>Super admin password</span>
         <input type="password" name="password" autoComplete="current-password" required autoFocus />
       </label>
       {state?.error && <p className="error" role="alert">{state.error}</p>}
-      <button className="btn primary" disabled={pending}>{pending ? 'Opening…' : 'Open dashboard'}</button>
+      <button className="btn primary" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
     </form>
   );
 }

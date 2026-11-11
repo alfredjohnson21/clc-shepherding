@@ -2,17 +2,20 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Header from '@/components/Header';
 import PrintButton from '@/components/PrintButton';
-import { requireAdmin } from '@/lib/auth';
+import { requireDashboard } from '@/lib/auth';
+import DeleteReport from '@/components/DeleteReport';
 import { query } from '@/lib/db';
-import { NAV } from '@/lib/nav';
-import { nameOf, person, titled } from '@/lib/tree';
+import { dashTitle, dashWho, navFor } from '@/lib/nav';
+import { getTree, titled, type Tree } from '@/lib/tree';
 import { fmtDate } from '@/lib/week';
 import { GOAL, PERFORMANCE, SCALE, type Highlight, type ReportRow } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ReportView({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const role = await requireDashboard();
+  const tree = await getTree();
+  const { nameOf, person } = tree;
   const { id } = await params;
   const [r] = await query<ReportRow>('SELECT * FROM reports WHERE id = $1', [Number(id) || 0]);
   if (!r) notFound();
@@ -22,11 +25,11 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
   const goal = GOAL.find((g) => g.value === d.goalAchieved);
   return (
     <>
-      <Header title="Head Pastor's Dashboard" who="Head Pastor" nav={NAV} />
+      <Header title={dashTitle(role)} who={dashWho(role)} nav={navFor(role)} />
       <main className="page narrow report-view">
         <div className="row between no-print">
           <Link href={`/admin?week=${r.week_start}`}>← Back to the week</Link>
-          <PrintButton />
+          <div className="row gap-s"><PrintButton />{role === 'super' && <DeleteReport id={r.id} />}</div>
         </div>
         <div className="page-head">
           <p className="eyebrow">Shepherding Assessment · Weekly group meeting report</p>
@@ -39,8 +42,8 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
 
         <Block title="Attendance">
           <p className="big-stat"><b>{d.totalPresent}</b> present · <b>{d.totalAbsent}</b> absent{d.visitors ? ` · includes ${d.visitors} visitor${d.visitors > 1 ? 's' : ''}` : ''}</p>
-          <Names label="Present" ids={d.presentIds} />
-          <Names label="Absent" ids={d.absentIds} tone="bad" />
+          <Names t={tree} label="Present" ids={d.presentIds} />
+          <Names t={tree} label="Absent" ids={d.absentIds} tone="bad" />
         </Block>
 
         <Block title="General meeting performance">
@@ -60,10 +63,10 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
         </Block>
 
         <Block title="Discussion highlights">
-          <HL label="Stood out in the discussions" h={d.stoodOut} />
-          <HL label="Less interactive" h={d.lessInteractive} />
-          <HL label="Asked a deep question" h={d.deepQuestion} />
-          <HL label="Needed lots of explanation" h={d.neededExplanation} />
+          <HL t={tree} label="Stood out in the discussions" h={d.stoodOut} />
+          <HL t={tree} label="Less interactive" h={d.lessInteractive} />
+          <HL t={tree} label="Asked a deep question" h={d.deepQuestion} />
+          <HL t={tree} label="Needed lots of explanation" h={d.neededExplanation} />
         </Block>
 
         <Block title="Post-meeting agenda">
@@ -110,15 +113,15 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 function Text({ label, v }: { label: string; v: string }) {
   return <div className="kv"><p className="kv-label">{label}</p>{v ? <p className="prewrap">{v}</p> : <p className="muted">—</p>}</div>;
 }
-function Names({ label, ids, tone }: { label: string; ids: number[]; tone?: string }) {
+function Names({ t, label, ids, tone }: { t: Tree; label: string; ids: number[]; tone?: string }) {
   if (!ids.length) return null;
-  return <div className="kv"><p className="kv-label">{label} ({ids.length})</p><p>{ids.map((i) => <span key={i} className={`pill ${tone ?? ''}`}>{nameOf(i)}</span>)}</p></div>;
+  return <div className="kv"><p className="kv-label">{label} ({ids.length})</p><p>{ids.map((i) => <span key={i} className={`pill ${tone ?? ''}`}>{t.nameOf(i)}</span>)}</p></div>;
 }
-function HL({ label, h }: { label: string; h: Highlight }) {
+function HL({ t, label, h }: { t: Tree; label: string; h: Highlight }) {
   return (
     <div className="kv">
       <p className="kv-label">{label}</p>
-      {h.ids.length === 0 && !h.note ? <p className="muted">—</p> : <p>{h.ids.map((i) => <span key={i} className="pill">{nameOf(i)}</span>)}{h.note && <span className="note"> {h.note}</span>}</p>}
+      {h.ids.length === 0 && !h.note ? <p className="muted">—</p> : <p>{h.ids.map((i) => <span key={i} className="pill">{t.nameOf(i)}</span>)}{h.note && <span className="note"> {h.note}</span>}</p>}
     </div>
   );
 }

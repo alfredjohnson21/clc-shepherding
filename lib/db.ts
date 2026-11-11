@@ -15,6 +15,22 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 CREATE INDEX IF NOT EXISTS reports_week_idx ON reports (week_start);
 CREATE INDEX IF NOT EXISTS reports_shepherd_idx ON reports (shepherd_id);
+CREATE TABLE IF NOT EXISTS people (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  category TEXT NOT NULL DEFAULT 'member',
+  reports_to_id INTEGER,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT,
+  active BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 `;
 
 const g = globalThis as unknown as { __db?: Promise<Runner> };

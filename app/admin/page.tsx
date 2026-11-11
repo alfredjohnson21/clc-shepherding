@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Header from '@/components/Header';
-import { requireAdmin } from '@/lib/auth';
+import { requireDashboard } from '@/lib/auth';
 import { absenceStreaks, byBranch, hasChallenge, loadWeeks, summarize } from '@/lib/stats';
-import { CATEGORY_LABEL, nameOf, person, shepherds, titled } from '@/lib/tree';
+import { CATEGORY_LABEL, getTree, titled } from '@/lib/tree';
 import { addDays, fmtDate, today, weekLabel, weekStart } from '@/lib/week';
 import { PERFORMANCE } from '@/lib/types';
-import { NAV } from '@/lib/nav';
+import { dashTitle, dashWho, navFor } from '@/lib/nav';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,24 +16,26 @@ const GOAL_LABEL: Record<string, string> = { yes: 'Achieved', partial: 'Partiall
 
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
-  await requireAdmin();
+  const role = await requireDashboard();
+  const tree = await getTree();
+  const { nameOf, person, shepherds } = tree;
   const sp = await searchParams;
   const current = weekStart(today());
   const ws = sp.week && /^\d{4}-\d{2}-\d{2}$/.test(sp.week) ? weekStart(sp.week) : current;
   const { weeks, byWeek } = await loadWeeks(ws);
   const reports = byWeek.get(ws)!.sort((a, b) => nameOf(a.shepherd_id).localeCompare(nameOf(b.shepherd_id)));
   const s = summarize(reports);
-  const branchRows = byBranch(reports);
+  const branchRows = byBranch(tree, reports);
   const submitted = new Set(reports.map((r) => r.shepherd_id));
   const missing = shepherds.filter((p) => !submitted.has(p.id));
   const challenges = reports.filter((r) => hasChallenge(r.data));
-  const streaks = absenceStreaks(weeks, byWeek);
+  const streaks = absenceStreaks(tree, weeks, byWeek);
   const visits = reports.flatMap((r) => r.data.visits.map((v) => ({ ...v, shepherdId: r.shepherd_id, reportId: r.id })));
   const trend = weeks.map((w) => ({ w, ...summarize(byWeek.get(w)!) }));
 
   return (
     <>
-      <Header title="Head Pastor's Dashboard" who="Head Pastor" nav={NAV} />
+      <Header title={dashTitle(role)} who={dashWho(role)} nav={navFor(role)} />
       <main className="page wide">
         <div className="dash-head">
           <div>

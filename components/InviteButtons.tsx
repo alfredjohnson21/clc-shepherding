@@ -1,16 +1,9 @@
 'use client';
 import { useState } from 'react';
 
-/** Copy or WhatsApp a ready-made sign-in message (link, username, password) to one shepherd. */
-export default function InviteButtons({ greeting, link, username, code, phone }: {
-  greeting: string; link: string; username: string; code: string; phone: string;
-}) {
+/** Copy or WhatsApp a ready-made message. Ghana numbers 0XXXXXXXXX become 233XXXXXXXXX. */
+export default function InviteButtons({ text, phone, copyLabel = 'Copy invite' }: { text: string; phone: string; copyLabel?: string }) {
   const [copied, setCopied] = useState(false);
-  const text =
-    `Hello ${greeting},\n\nHere is your sign-in for the CLC weekly Shepherding Assessment report:\n\n` +
-    `Link: ${link}\nUsername: ${username}\nPassword: ${code}\n\n` +
-    `Open the link, enter your password and fill in the form after each group meeting. Please keep your password private.`;
-  // Ghana numbers: 0XXXXXXXXX → 233XXXXXXXXX. With no number WhatsApp lets you pick the contact.
   const digits = (phone.match(/\d[\d\s]{8,}/)?.[0] ?? '').replace(/\s/g, '');
   const intl = digits.startsWith('0') ? '233' + digits.slice(1) : digits;
   const wa = `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
@@ -23,7 +16,7 @@ export default function InviteButtons({ greeting, link, username, code, phone }:
   }
   return (
     <div className="invite-actions no-print">
-      <button type="button" className="btn small" onClick={copy}>{copied ? 'Copied ✓' : 'Copy invite'}</button>
+      <button type="button" className="btn small" onClick={copy}>{copied ? 'Copied ✓' : copyLabel}</button>
       <a className="btn small" href={wa} target="_blank" rel="noopener noreferrer">WhatsApp</a>
     </div>
   );

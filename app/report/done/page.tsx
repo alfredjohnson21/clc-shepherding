@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { requireShepherd } from '@/lib/auth';
-import { person, titled } from '@/lib/tree';
+import { getTree, titled } from '@/lib/tree';
 
 export default async function Done() {
   const id = await requireShepherd();
-  const me = person(id)!;
+  const me = (await getTree()).person(id)!;
   return (
     <>
       <Header title="Shepherding Assessment" who={titled(me)} />

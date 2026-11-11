@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 import ReportForm from '@/components/ReportForm';
 import { requireShepherd } from '@/lib/auth';
 import { query } from '@/lib/db';
-import { groupOf, person, titled } from '@/lib/tree';
+import { getTree, titled } from '@/lib/tree';
 import { fmtDate, today } from '@/lib/week';
 import type { ReportRow } from '@/lib/types';
 
@@ -11,8 +11,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function ReportPage() {
   const id = await requireShepherd();
-  const me = person(id)!;
-  const group = groupOf(id).map((p) => ({ id: p.id, name: p.name, role: p.role }));
+  const tree = await getTree();
+  const me = tree.person(id)!;
+  const group = tree.groupOf(id).map((p) => ({ id: p.id, name: p.name, role: p.role }));
   const past = await query<ReportRow>('SELECT id, meeting_date, created_at, data FROM reports WHERE shepherd_id = $1 ORDER BY meeting_date DESC, id DESC LIMIT 6', [id]);
   const last = past[0]?.data;
   return (

@@ -1,6 +1,6 @@
 import 'server-only';
 import { query } from './db';
-import { branches, groupOf, person, shepherds } from './tree';
+import type { Tree } from './tree';
 import { addDays } from './week';
 import type { ReportData, ReportRow } from './types';
 
@@ -40,22 +40,23 @@ export function summarize(reports: ReportRow[]) {
   };
 }
 
-export function byBranch(reports: ReportRow[]) {
-  return branches.map((b) => {
+export function byBranch(tree: Tree, reports: ReportRow[]) {
+  const shepherds = tree.shepherds;
+  return tree.branches.map((b) => {
     const team = shepherds.filter((s) => s.branchId === b.id);
-    const rs = reports.filter((r) => person(r.shepherd_id)?.branchId === b.id);
+    const rs = reports.filter((r) => tree.person(r.shepherd_id)?.branchId === b.id);
     return { head: b, expected: team.length, submittedIds: new Set(rs.map((r) => r.shepherd_id)), ...summarize(rs) };
   });
 }
 
 /** Members marked absent in their shepherd's most recent N consecutive reports (N >= 2). */
-export function absenceStreaks(weeks: string[], byWeek: Map<string, ReportRow[]>) {
+export function absenceStreaks(tree: Tree, weeks: string[], byWeek: Map<string, ReportRow[]>) {
   const out: { memberId: number; shepherdId: number; streak: number }[] = [];
   const ordered = [...weeks].reverse();
-  for (const s of shepherds) {
+  for (const s of tree.shepherds) {
     const reports = ordered.map((w) => byWeek.get(w)!.find((r) => r.shepherd_id === s.id)).filter(Boolean) as ReportRow[];
     if (reports.length < 2) continue;
-    for (const m of groupOf(s.id)) {
+    for (const m of tree.groupOf(s.id)) {
       let streak = 0;
       for (const r of reports) {
         if (r.data.absentIds.includes(m.id)) streak++;

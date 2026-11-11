@@ -1,24 +1,26 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { accessCode, checkAdminPassword, clearSession, getSession, setSession } from '@/lib/auth';
+import { accessCode, checkSuperPassword, clearSession, getSession, setSession } from '@/lib/auth';
 import { query } from '@/lib/db';
-import { groupOf, person, shepherds } from '@/lib/tree';
+import { getTree } from '@/lib/tree';
 import { weekStart } from '@/lib/week';
 import type { ReportData } from '@/lib/types';
 
 export async function shepherdLogin(_: unknown, form: FormData) {
   const id = Number(form.get('id'));
   const code = String(form.get('code') || '').replace(/\D/g, '');
-  if (!shepherds.some((s) => s.id === id)) return { error: 'Please choose your name.' };
-  if (code !== accessCode(id)) return { error: 'That password is not correct. Check the message you were sent, or ask the church admin.' };
+  const tree = await getTree();
+  const me = tree.shepherds.find((s) => s.id === id);
+  if (!me) return { error: 'Please choose your name.' };
+  if (code !== accessCode(me)) return { error: 'That password is not correct. Check the message you were sent, or ask the church admin.' };
   await setSession({ kind: 'shepherd', id });
   redirect('/report');
 }
 
 export async function adminLogin(_: unknown, form: FormData) {
-  if (!checkAdminPassword(String(form.get('password') || ''))) return { error: 'Incorrect password.' };
-  await setSession({ kind: 'admin' });
+  if (!checkSuperPassword(String(form.get('password') || ''))) return { error: 'Incorrect password.' };
+  await setSession({ kind: 'super' });
   redirect('/admin');
 }
 
@@ -35,8 +37,10 @@ const int = (v: unknown, lo: number, hi: number) => Math.min(hi, Math.max(lo, Ma
 export async function submitReport(raw: ReportData): Promise<{ error?: string; id?: number }> {
   const s = await getSession();
   if (s?.kind !== 'shepherd') return { error: 'Your session has expired. Please sign in again.' };
-  const me = person(s.id)!;
-  const allowed = new Set(groupOf(me.id).map((p) => p.id));
+  const tree = await getTree();
+  const me = tree.person(s.id);
+  if (!me?.active) return { error: 'Your account is no longer active. Please contact the church admin.' };
+  const allowed = new Set(tree.groupOf(me.id).map((p) => p.id));
   const meetingDate = str(raw.meetingDate, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(meetingDate)) return { error: 'Please enter the date of the meeting.' };
   if (!['excellent', 'good', 'fair', 'difficult'].includes(raw.performance)) return { error: 'Please say how the meeting went.' };
