@@ -18,7 +18,7 @@ export default async function PersonalLink({ params }: { params: Promise<{ usern
     <main className="landing">
       <section className="landing-card">
         <div className="landing-head">
-          <span className="brand-mark lg" aria-hidden>✝</span>
+          <img src="/clc-logo.png" alt="Christ’s Love Church logo" className="logo-lg" width={120} height={81} />
           <p className="eyebrow">Christ&rsquo;s Love Church</p>
           <h1>Shepherding Assessment</h1>
           <p className="welcome">Welcome, <b>{titled(me)}</b>. Enter your password to start this week&rsquo;s report.</p>

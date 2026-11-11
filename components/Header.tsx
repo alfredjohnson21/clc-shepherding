@@ -7,7 +7,7 @@ export default function Header({ title, who, nav }: { title: string; who?: strin
     <header className="topbar">
       <div className="topbar-inner">
         <Link href="/" className="brand">
-          <span className="brand-mark" aria-hidden>✝</span>
+          <img src="/clc-logo.png" alt="" className="logo-sm" width={46} height={31} />
           <span><b>Christ&rsquo;s Love Church</b><small>{title}</small></span>
         </Link>
         <nav className="topnav">
