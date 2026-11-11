@@ -28,7 +28,7 @@ export function ShepherdLogin({ options, fixed }: {
       <label className="field">
         <span>{fixed ? 'Password' : 'Access code'}</span>
         <input name="code" type={fixed ? 'password' : 'text'} inputMode="numeric" autoComplete={fixed ? 'current-password' : 'one-time-code'}
-          placeholder="6 digits" maxLength={6} required autoFocus={!!fixed} />
+          placeholder={fixed ? "Your password" : "Your code"} maxLength={6} required autoFocus={!!fixed} />
       </label>
       {state?.error && <p className="error" role="alert">{state.error}</p>}
       <button className="btn primary" disabled={pending}>{pending ? 'Signing in…' : 'Start weekly report'}</button>

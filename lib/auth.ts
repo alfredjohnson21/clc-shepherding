@@ -2,6 +2,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { person } from './tree';
 
 const COOKIE = 'clc_session';
 const secret = () => {
@@ -13,8 +14,13 @@ const sign = (v: string) => createHmac('sha256', secret()).update(v).digest('bas
 
 export type Session = { kind: 'shepherd'; id: number } | { kind: 'admin' };
 
-/** Each shepherd's 6-digit access code, derived from SESSION_SECRET (changing the secret rotates all codes). */
+/**
+ * Each shepherd's password: the first 5 digits of their phone number (church's choice, 2026-11-11).
+ * Leaders with no phone on file keep a 6-digit code derived from SESSION_SECRET.
+ */
 export function accessCode(id: number): string {
+  const phone = (person(id)?.phone.match(/\d[\d\s]{8,}/)?.[0] ?? '').replace(/\s/g, '');
+  if (phone.length >= 9) return phone.slice(0, 5);
   const h = createHmac('sha256', secret()).update(`code:${id}`).digest();
   return String(h.readUInt32BE(0) % 1_000_000).padStart(6, '0');
 }
