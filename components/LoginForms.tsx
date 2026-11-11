@@ -2,20 +2,33 @@
 import { useActionState } from 'react';
 import { adminLogin, shepherdLogin } from '@/app/actions';
 
-export function ShepherdLogin({ options }: { options: { id: number; label: string }[] }) {
+export function ShepherdLogin({ options, fixed }: {
+  options?: { id: number; label: string }[];
+  /** Personal link: the shepherd is already known, so only the password is asked for. */
+  fixed?: { id: number; username: string };
+}) {
   const [state, action, pending] = useActionState(shepherdLogin, null);
   return (
     <form action={action} className="stack">
+      {fixed ? (
+        <label className="field">
+          <span>Username</span>
+          <input type="hidden" name="id" value={fixed.id} />
+          <input name="username" value={fixed.username} readOnly autoComplete="username" className="readonly" />
+        </label>
+      ) : (
+        <label className="field">
+          <span>Your name</span>
+          <select name="id" required defaultValue="">
+            <option value="" disabled>Choose your name…</option>
+            {options?.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+        </label>
+      )}
       <label className="field">
-        <span>Your name</span>
-        <select name="id" required defaultValue="">
-          <option value="" disabled>Choose your name…</option>
-          {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-        </select>
-      </label>
-      <label className="field">
-        <span>Access code</span>
-        <input name="code" inputMode="numeric" autoComplete="one-time-code" placeholder="6 digits" maxLength={6} required />
+        <span>{fixed ? 'Password' : 'Access code'}</span>
+        <input name="code" type={fixed ? 'password' : 'text'} inputMode="numeric" autoComplete={fixed ? 'current-password' : 'one-time-code'}
+          placeholder="6 digits" maxLength={6} required autoFocus={!!fixed} />
       </label>
       {state?.error && <p className="error" role="alert">{state.error}</p>}
       <button className="btn primary" disabled={pending}>{pending ? 'Signing in…' : 'Start weekly report'}</button>

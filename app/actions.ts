@@ -11,7 +11,7 @@ export async function shepherdLogin(_: unknown, form: FormData) {
   const id = Number(form.get('id'));
   const code = String(form.get('code') || '').replace(/\D/g, '');
   if (!shepherds.some((s) => s.id === id)) return { error: 'Please choose your name.' };
-  if (code !== accessCode(id)) return { error: 'That access code is not correct. Ask the church admin for yours.' };
+  if (code !== accessCode(id)) return { error: 'That password is not correct. Check the message you were sent, or ask the church admin.' };
   await setSession({ kind: 'shepherd', id });
   redirect('/report');
 }

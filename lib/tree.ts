@@ -29,3 +29,11 @@ export const branches = people.filter((p) => p.level === 1);
 export function titled(p: Person) {
   return p.role ? `${p.role} ${p.name}` : p.name;
 }
+
+/** Short sign-in username, e.g. "Alfred Johnson Nii Ansah" → "alfred.johnson". Unique across shepherds. */
+export function usernameOf(p: Person) {
+  const words = p.name.normalize('NFKD').replace(/[^a-zA-Z\s-]/g, '').toLowerCase().split(/[\s-]+/).filter(Boolean);
+  return words.slice(0, 2).join('.');
+}
+const byUsername = new Map(shepherds.map((p) => [usernameOf(p), p]));
+export const shepherdByUsername = (u: string) => byUsername.get(u.trim().toLowerCase());
