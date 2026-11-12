@@ -220,6 +220,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--n
 .pill { display: inline-flex; align-items: center; gap: 4px; background: var(--navy-soft); color: var(--navy); border-radius: 99px; padding: 3px 10px; font-size: 13px; font-weight: 600; margin: 0 4px 4px 0; }
 .pill.bad { background: var(--bad-soft); color: var(--bad); }
 .tel { font-weight: 500; font-size: 13px; white-space: nowrap; }
+.sent { font-weight: 600; font-size: 13px; white-space: nowrap; color: #16803c; text-decoration: none; }
 .branch-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 12px 0 2px; }
 .missing > div:first-child .branch-label { margin-top: 0; }
 .streak { font-size: 12px; font-weight: 700; border-radius: 99px; padding: 2px 9px; background: #ffedd5; color: var(--gold-ink); }

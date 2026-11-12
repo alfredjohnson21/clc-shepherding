@@ -2,7 +2,13 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import { requireDashboard } from '@/lib/auth';
 import { absenceStreaks, byBranch, hasChallenge, loadWeeks, summarize } from '@/lib/stats';
-import { CATEGORY_LABEL, getTree, titled } from '@/lib/tree';
+import { CATEGORIES, CATEGORY_LABEL, getTree, titled, type Person } from '@/lib/tree';
+
+/** Branch head first, then Executive Council, Admin Council, other pastors, other leaders, members. */
+const byRank = (a: Person, b: Person) =>
+  (a.level === 1 ? 0 : 1) - (b.level === 1 ? 0 : 1) ||
+  CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) ||
+  a.name.localeCompare(b.name);
 import { addDays, fmtDate, today, weekLabel, weekStart } from '@/lib/week';
 import { PERFORMANCE } from '@/lib/types';
 import { dashTitle, dashWho, navFor } from '@/lib/nav';
@@ -85,24 +91,27 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
         <div className="cols">
           <section className="card">
-            <h2 className="h2">Not yet submitted <span className="count">{missing.length}</span></h2>
-            {missing.length === 0 ? <p className="muted">Every shepherd has reported this week.</p> : (
-              <div className="missing">
-                {branchRows.filter((b) => missing.some((m) => m.branchId === b.head.id)).map((b) => (
-                  <div key={b.head.id}>
-                    <p className="branch-label">{titled(b.head)}</p>
-                    <ul className="plain-list">
-                      {missing.filter((m) => m.branchId === b.head.id).map((m) => (
+            <h2 className="h2">Who has reported <span className="count">{missing.length} not yet</span></h2>
+            {missing.length === 0 && <p className="muted">Every shepherd has reported this week.</p>}
+            <div className="missing">
+              {branchRows.filter((b) => shepherds.some((m) => m.branchId === b.head.id)).map((b) => (
+                <div key={b.head.id}>
+                  <p className="branch-label">{titled(b.head)}</p>
+                  <ul className="plain-list">
+                    {shepherds.filter((m) => m.branchId === b.head.id).sort(byRank).map((m) => {
+                      const sent = reports.find((r) => r.shepherd_id === m.id);
+                      return (
                         <li key={m.id}>
                           <span>{m.name} <small className="muted">{CATEGORY_LABEL[m.category]}</small></span>
-                          {m.phone ? <a href={`tel:${m.phone}`} className="tel">{m.phone}</a> : <span className="muted small">no phone</span>}
+                          {sent ? <Link href={`/admin/reports/${sent.id}`} className="sent">✓ Sent</Link>
+                            : m.phone ? <a href={`tel:${m.phone}`} className="tel">{m.phone}</a> : <span className="muted small">no phone</span>}
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
 
           <section className="card">
