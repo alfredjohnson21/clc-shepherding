@@ -29,7 +29,7 @@ export default async function ReportPage() {
           shepherdId={id}
           group={group}
           today={today()}
-          defaults={{ groupName: last?.groupName ?? `${me.name}'s group`, signature: me.name, meetingTime: last?.meetingTime ?? '', mainGoal: last?.nextAgenda ?? '' }}
+          defaults={{ groupName: last?.groupName ?? `${me.name}'s group`, signature: me.name, meetingTime: last?.meetingTime ?? '', mainGoal: '' }}
         />
         {past.length > 0 && (
           <section className="card mt">

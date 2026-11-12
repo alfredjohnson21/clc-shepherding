@@ -210,8 +210,6 @@ export default function ReportForm({ shepherdId, group, today, defaults }: { she
           />
         </div>
 
-        <label className="field mt-s"><span>What is next week&rsquo;s agenda?</span>
-          <textarea rows={2} value={f.nextAgenda} onChange={(e) => set('nextAgenda', e.target.value)} /></label>
         <label className="field mt-s"><span>What will you improve on in next week&rsquo;s discussion?</span>
           <textarea rows={2} value={f.improve} onChange={(e) => set('improve', e.target.value)} /></label>
       </Section>

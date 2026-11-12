@@ -90,7 +90,6 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
               </>
             )}
           </div>
-          <Text label="Next week's agenda" v={d.nextAgenda} />
           <Text label="Will improve on" v={d.improve} />
         </Block>
 
