@@ -59,7 +59,7 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
 
         <Block title="Engagement & interaction">
           <Score label="General participation" v={d.participation} />
-          <Score label="Vulnerable and open" v={d.vulnerability} />
+          <Score label="Members open" v={d.vulnerability} />
         </Block>
 
         <Block title="Discussion highlights">

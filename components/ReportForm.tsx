@@ -153,7 +153,7 @@ export default function ReportForm({ shepherdId, group, today, defaults }: { she
 
       <Section n={4} title="Engagement & interaction">
         <Scale label="What was the general participation like?" value={f.participation} onChange={(v) => set('participation', v)} />
-        <Scale label="Were members vulnerable and open?" value={f.vulnerability} onChange={(v) => set('vulnerability', v)} />
+        <Scale label="Were members open?" value={f.vulnerability} onChange={(v) => set('vulnerability', v)} />
         <details className="scale-key">
           <summary>Scale key</summary>
           <ul>{SCALE.map((s) => <li key={s.value}><b>{s.value}</b> {s.hint}</li>)}</ul>

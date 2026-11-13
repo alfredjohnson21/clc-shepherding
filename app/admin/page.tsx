@@ -59,7 +59,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <Kpi label="Reports received" value={`${s.n}`} sub={`of ${shepherds.length} shepherds`} meter={s.n / shepherds.length} />
           <Kpi label="Attendance" value={pct(s.attendance)} sub={`${s.present} present · ${s.absent} absent`} meter={s.attendance ?? 0} />
           <Kpi label="Participation" value={dec(s.participation)} sub="average, out of 3" meter={(s.participation ?? 0) / 3} />
-          <Kpi label="Openness" value={dec(s.vulnerability)} sub="vulnerable & open, out of 3" meter={(s.vulnerability ?? 0) / 3} />
+          <Kpi label="Openness" value={dec(s.vulnerability)} sub="members open, out of 3" meter={(s.vulnerability ?? 0) / 3} />
         </section>
 
         <section className="card attention">
