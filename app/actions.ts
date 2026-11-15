@@ -68,6 +68,7 @@ export async function submitReport(raw: ReportData): Promise<{ error?: string; i
     stoodOut: hl(raw.stoodOut), lessInteractive: hl(raw.lessInteractive),
     deepQuestion: hl(raw.deepQuestion), neededExplanation: hl(raw.neededExplanation),
     pastoralCare: str(raw.pastoralCare),
+    pastoralCareIds: ids(raw.pastoralCareIds, allowed),
     visits: (Array.isArray(raw.visits) ? raw.visits : []).slice(0, 50)
       .map((v) => ({ id: allowed.has(Number(v?.id)) ? Number(v.id) : null, name: str(v?.name, 200), day: str(v?.day, 20), note: str(v?.note, 500) }))
       .filter((v) => v.id || v.name),

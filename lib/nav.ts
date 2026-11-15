@@ -3,6 +3,7 @@ import type { Role } from './auth';
 export function navFor(role: Role) {
   const nav = [
     { href: '/admin', label: 'Dashboard' },
+    { href: '/admin/members', label: 'Members' },
     { href: '/admin/reports', label: 'All reports' },
   ];
   if (role === 'super') nav.push({ href: '/admin/people', label: 'People' }, { href: '/admin/codes', label: 'Sign-in links' });

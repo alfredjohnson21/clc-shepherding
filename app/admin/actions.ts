@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requireSuper, resetViewToken } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { CATEGORIES, freeUsername, getTree, type Category } from '@/lib/tree';
+import { CARE_STATUS, MILESTONES, NOTE_KINDS, PERSONAL_FIELDS, type ProfileDetails } from '@/lib/types';
 
 const str = (f: FormData, k: string, max = 200) => String(f.get(k) ?? '').trim().slice(0, max);
 const back = (path: string, msg: string, kind: 'err' | 'ok' = 'err') =>
@@ -113,4 +114,77 @@ export async function resetHeadPastorLink() {
   await requireSuper();
   await resetViewToken();
   back('/admin/codes', 'A new Head Pastor link was made. The old link no longer works — send him the new one.', 'ok');
+}
+
+const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+
+/** Makes sure a member_profiles row exists, so the updates below have something to change. */
+const ensureProfile = (id: number) => query('INSERT INTO member_profiles (person_id) VALUES ($1) ON CONFLICT (person_id) DO NOTHING', [id]);
+
+async function profileTarget(f: FormData) {
+  const id = Number(f.get('id'));
+  const p = (await getTree()).person(id);
+  return p && p.level >= 1 ? p : null;
+}
+
+export async function saveProfile(f: FormData) {
+  await requireSuper();
+  const p = await profileTarget(f);
+  if (!p) return back('/admin/members', 'That member was not found.');
+  const path = `/admin/members/${p.id}/edit`;
+  const details: ProfileDetails = {};
+  for (const fld of PERSONAL_FIELDS) {
+    const v = str(f, fld.key, 120);
+    if (!v) continue;
+    if ('date' in fld && !isDate(v)) return back(path, `Please enter a valid date for ${fld.label.toLowerCase()}.`);
+    if ('options' in fld && !(fld.options as readonly string[]).includes(v)) return back(path, `Please choose a ${fld.label.toLowerCase()} from the list.`);
+    details[fld.key] = v;
+  }
+  for (const m of MILESTONES) {
+    const v = str(f, m.key, 10);
+    if (!v) continue;
+    if (!isDate(v)) return back(path, `Please enter a valid date for "${m.label}".`);
+    details[m.key] = v;
+  }
+  await ensureProfile(p.id);
+  await query('UPDATE member_profiles SET details = $2::jsonb, updated_at = now() WHERE person_id = $1', [p.id, JSON.stringify(details)]);
+  revalidatePath('/admin/members', 'layout');
+  back(`/admin/members/${p.id}`, 'Profile details saved.', 'ok');
+}
+
+export async function setCareStatus(f: FormData) {
+  await requireSuper();
+  const p = await profileTarget(f);
+  if (!p) return back('/admin/members', 'That member was not found.');
+  const status = str(f, 'status');
+  if (status && !CARE_STATUS.some((c) => c.value === status && c.value !== 'new')) return back(`/admin/members/${p.id}`, 'Please choose a status.');
+  const note = status ? str(f, 'statusNote', 500) : '';
+  await ensureProfile(p.id);
+  await query('UPDATE member_profiles SET care_status = $2, status_note = $3, updated_at = now() WHERE person_id = $1', [p.id, status, note]);
+  revalidatePath('/admin/members', 'layout');
+  back(`/admin/members/${p.id}`, status ? 'Care status set.' : 'Care status is automatic again.', 'ok');
+}
+
+export async function addCareNote(f: FormData) {
+  await requireSuper();
+  const p = await profileTarget(f);
+  if (!p) return back('/admin/members', 'That member was not found.');
+  const path = `/admin/members/${p.id}`;
+  const date = str(f, 'date', 10);
+  const kind = str(f, 'kind', 40);
+  const note = str(f, 'note', 2000);
+  if (!isDate(date)) return back(path, 'Please enter the date of the note.');
+  if (!(NOTE_KINDS as readonly string[]).includes(kind)) return back(path, 'Please choose what kind of note this is.');
+  if (!note) return back(path, 'Please write the note.');
+  await query('INSERT INTO care_notes (person_id, note_date, kind, note) VALUES ($1, $2, $3, $4)', [p.id, date, kind, note]);
+  revalidatePath('/admin/members', 'layout');
+  back(path, 'Note added.', 'ok');
+}
+
+export async function deleteCareNote(f: FormData) {
+  await requireSuper();
+  const id = Number(f.get('noteId'));
+  const [r] = await query<{ person_id: number }>('DELETE FROM care_notes WHERE id = $1 RETURNING person_id', [id]);
+  revalidatePath('/admin/members', 'layout');
+  back(r ? `/admin/members/${r.person_id}` : '/admin/members', 'Note deleted.', 'ok');
 }

@@ -31,6 +31,22 @@ CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS member_profiles (
+  person_id INTEGER PRIMARY KEY,
+  details JSONB NOT NULL DEFAULT '{}',
+  care_status TEXT NOT NULL DEFAULT '',
+  status_note TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS care_notes (
+  id SERIAL PRIMARY KEY,
+  person_id INTEGER NOT NULL,
+  note_date TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  note TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS care_notes_person_idx ON care_notes (person_id);
 `;
 
 const g = globalThis as unknown as { __db?: Promise<Runner> };

@@ -7,8 +7,8 @@ import type { ReportData, ReportRow } from './types';
 const TREND_WEEKS = 8;
 
 /** Latest report per shepherd per week, for the selected week and the weeks before it. */
-export async function loadWeeks(ws: string) {
-  const from = addDays(ws, -7 * (TREND_WEEKS - 1));
+export async function loadWeeks(ws: string, count = TREND_WEEKS) {
+  const from = addDays(ws, -7 * (count - 1));
   const rows = await query<ReportRow>(
     'SELECT id, shepherd_id, meeting_date, week_start, data, created_at FROM reports WHERE week_start >= $1 AND week_start <= $2 ORDER BY id',
     [from, ws],
@@ -18,7 +18,7 @@ export async function loadWeeks(ws: string) {
     if (typeof r.data === 'string') r.data = JSON.parse(r.data);
     latest.set(`${r.week_start}|${r.shepherd_id}`, r);
   }
-  const weeks = Array.from({ length: TREND_WEEKS }, (_, i) => addDays(from, 7 * i));
+  const weeks = Array.from({ length: count }, (_, i) => addDays(from, 7 * i));
   const byWeek = new Map<string, ReportRow[]>(weeks.map((w) => [w, []]));
   for (const r of latest.values()) byWeek.get(r.week_start)?.push(r);
   return { weeks, byWeek };

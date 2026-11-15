@@ -70,13 +70,13 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
         </Block>
 
         <Block title="Post-meeting agenda">
-          <Text label="Online Pastoral Care this week with" v={d.pastoralCare} />
+          {d.pastoralCareIds ? <HL t={tree} label="Online pastoral care this week with" h={{ ids: d.pastoralCareIds, note: d.pastoralCare }} /> : <Text label="Online Pastoral Care this week with" v={d.pastoralCare} />}
           <div className="kv">
             <p className="kv-label">Visits this week</p>
             {d.visits.length === 0 ? <p className="muted">None</p> : (
               <ul className="plain-list">
                 {d.visits.map((v: ReportRow['data']['visits'][number], i: number) => (
-                  <li key={i}><span>{v.id ? nameOf(v.id) : v.name}{v.note && <small className="muted"> — {v.note}</small>}</span><span>{v.day || '—'}</span></li>
+                  <li key={i}><span>{v.id ? <Link href={`/admin/members/${v.id}`}>{nameOf(v.id)}</Link> : v.name}{v.note && <small className="muted"> — {v.note}</small>}</span><span>{v.day || '—'}</span></li>
                 ))}
               </ul>
             )}
@@ -85,7 +85,7 @@ export default async function ReportView({ params }: { params: Promise<{ id: str
             <p className="kv-label">Pressing challenge for Papa</p>
             {d.challenge.ids.length === 0 && !d.challenge.note ? <p className="muted">None reported</p> : (
               <>
-                <p>{d.challenge.ids.map((i: number) => { const m = person(i); return <span key={i} className="pill">{nameOf(i)}{m?.phone && <a className="tel" href={`tel:${m.phone}`}> {m.phone}</a>}</span>; })}</p>
+                <p>{d.challenge.ids.map((i: number) => { const m = person(i); return <span key={i} className="pill"><Link href={`/admin/members/${i}`}>{nameOf(i)}</Link>{m?.phone && <a className="tel" href={`tel:${m.phone}`}> {m.phone}</a>}</span>; })}</p>
                 {d.challenge.note && <p className="prewrap">{d.challenge.note}</p>}
               </>
             )}
@@ -114,13 +114,13 @@ function Text({ label, v }: { label: string; v: string }) {
 }
 function Names({ t, label, ids, tone }: { t: Tree; label: string; ids: number[]; tone?: string }) {
   if (!ids.length) return null;
-  return <div className="kv"><p className="kv-label">{label} ({ids.length})</p><p>{ids.map((i) => <span key={i} className={`pill ${tone ?? ''}`}>{t.nameOf(i)}</span>)}</p></div>;
+  return <div className="kv"><p className="kv-label">{label} ({ids.length})</p><p>{ids.map((i) => <Link key={i} href={`/admin/members/${i}`} className={`pill ${tone ?? ''}`}>{t.nameOf(i)}</Link>)}</p></div>;
 }
 function HL({ t, label, h }: { t: Tree; label: string; h: Highlight }) {
   return (
     <div className="kv">
       <p className="kv-label">{label}</p>
-      {h.ids.length === 0 && !h.note ? <p className="muted">—</p> : <p>{h.ids.map((i) => <span key={i} className="pill">{t.nameOf(i)}</span>)}{h.note && <span className="note"> {h.note}</span>}</p>}
+      {h.ids.length === 0 && !h.note ? <p className="muted">—</p> : <p>{h.ids.map((i) => <Link key={i} href={`/admin/members/${i}`} className="pill">{t.nameOf(i)}</Link>)}{h.note && <span className="note"> {h.note}</span>}</p>}
     </div>
   );
 }

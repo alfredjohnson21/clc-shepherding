@@ -1,4 +1,4 @@
-// Fills the LOCAL dev database (./.data/pglite) with 6 weeks of sample reports so the dashboard can be previewed.
+// Fills the LOCAL dev database (./.data/pglite) with 12 weeks of sample reports so the dashboard can be previewed.
 // Usage: node scripts/seed-demo.mjs   (never run against production)
 import { PGlite } from '@electric-sql/pglite';
 import fs from 'fs';
@@ -10,11 +10,12 @@ await db.exec('DELETE FROM reports');
 const shepherds = tree.filter((p) => p.level >= 1 && tree.some((c) => c.reportsToId === p.id));
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const pick = (a) => a[Math.floor(rnd() * a.length)];
+const some = (a) => (a.length && rnd() < 0.7 ? [pick(a)] : []);
 const iso = (d) => d.toISOString().slice(0, 10);
 const now = new Date(); const dow = (now.getUTCDay() + 6) % 7;
 const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dow));
 const chronic = new Set(tree.filter((p) => p.level >= 2 && rnd() < 0.06).map((p) => p.id));
-for (let w = 5; w >= 0; w--) {
+for (let w = 11; w >= 0; w--) {
   const ws = new Date(monday); ws.setUTCDate(ws.getUTCDate() - 7 * w);
   for (const s of shepherds) {
     if (rnd() < (w === 0 ? 0.35 : 0.2)) continue;
@@ -28,8 +29,8 @@ for (let w = 5; w >= 0; w--) {
       totalPresent: present.length, totalAbsent: absent.length, performance: perf, atmosphere: 'Warm and attentive; good worship before discussion.',
       mainGoal: pick(['Understanding grace (Ephesians 2)', 'Prayer life and consistency', 'Serving one another in love']), goalAchieved: pick(['yes', 'yes', 'partial', 'no']), goalSummary: 'Members connected the teaching to daily life.',
       participation: Math.floor(rnd() * 4), vulnerability: Math.floor(rnd() * 4),
-      stoodOut: { ids: present.slice(0, 1), note: '' }, lessInteractive: { ids: present.slice(-1), note: '' }, deepQuestion: { ids: present.slice(1, 2), note: 'Asked how to forgive someone who keeps hurting you.' }, neededExplanation: { ids: [], note: '' },
-      pastoralCare: 'Deaconess on the team', visits: absent.slice(0, 1).map((id) => ({ id, name: '', day: pick(['Tuesday', 'Thursday', 'Saturday']), note: 'Missed meeting' })),
+      stoodOut: { ids: some(present), note: '' }, lessInteractive: { ids: some(present), note: '' }, deepQuestion: { ids: some(present), note: 'Asked how to forgive someone who keeps hurting you.' }, neededExplanation: { ids: [], note: '' },
+      pastoralCare: 'Follow up on prayer requests', pastoralCareIds: present.length > 2 && rnd() < 0.6 ? [pick(present)] : [], visits: absent.slice(0, 1).map((id) => ({ id, name: '', day: pick(['Tuesday', 'Thursday', 'Saturday']), note: 'Missed meeting' })),
       challenge: ch, nextAgenda: 'Continue the series', improve: 'Start on time', otherInfo: '', signature: s.name };
     data.totalPresent += data.visitors;
     await db.query('INSERT INTO reports (shepherd_id, meeting_date, week_start, data) VALUES ($1,$2,$3,$4)', [s.id, iso(md), iso(ws), JSON.stringify(data)]);

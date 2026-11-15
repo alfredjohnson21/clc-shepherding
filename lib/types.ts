@@ -41,7 +41,10 @@ export type ReportData = {
   lessInteractive: Highlight;
   deepQuestion: Highlight;
   neededExplanation: Highlight;
+  /** Note for online pastoral care (older reports: free text naming who). */
   pastoralCare: string;
+  /** Members picked for online pastoral care — missing on reports made before the picker. */
+  pastoralCareIds?: number[];
   visits: { id: number | null; name: string; day: string; note: string }[];
   challenge: { ids: number[]; note: string };
   nextAgenda: string;
@@ -51,3 +54,38 @@ export type ReportData = {
 };
 
 export type ReportRow = { id: number; shepherd_id: number; meeting_date: string; week_start: string; data: ReportData; created_at: string };
+
+/** Spiritual milestones kept on a member's profile (each is a date). */
+export const MILESTONES = [
+  { key: 'joinedOn', label: 'Joined the church' },
+  { key: 'bornAgainOn', label: 'Born again' },
+  { key: 'waterBaptismOn', label: 'Water baptism' },
+  { key: 'holySpiritOn', label: 'Holy Spirit baptism' },
+  { key: 'foundationDoneOn', label: 'Completed foundation class' },
+] as const;
+
+export const PERSONAL_FIELDS = [
+  { key: 'gender', label: 'Gender', options: ['Female', 'Male'] },
+  { key: 'birthday', label: 'Birthday', date: true },
+  { key: 'maritalStatus', label: 'Marital status', options: ['Single', 'Married', 'Widowed', 'Divorced', 'Separated'] },
+  { key: 'occupation', label: 'Occupation' },
+  { key: 'area', label: 'Area / where they live' },
+  { key: 'department', label: 'Serving in (department)' },
+] as const;
+
+export type MilestoneKey = (typeof MILESTONES)[number]['key'];
+export type PersonalKey = (typeof PERSONAL_FIELDS)[number]['key'];
+export type ProfileDetails = Partial<Record<MilestoneKey | PersonalKey, string>>;
+
+export const CARE_STATUS = [
+  { value: 'urgent', label: 'Urgent', hint: 'Needs pastoral attention now' },
+  { value: 'needs_care', label: 'Needs care', hint: 'Slipping — follow up this week' },
+  { value: 'stable', label: 'Stable', hint: 'Steady, keep shepherding as usual' },
+  { value: 'thriving', label: 'Thriving', hint: 'Consistent and growing' },
+  { value: 'new', label: 'No data yet', hint: 'Not yet marked in any recent report' },
+] as const;
+export type CareStatus = (typeof CARE_STATUS)[number]['value'];
+
+export const NOTE_KINDS = ['Phone call', 'Visit', 'Counselling', 'Prayer request', 'Follow-up', 'Other'] as const;
+
+export type CareNote = { id: number; person_id: number; note_date: string; kind: string; note: string };

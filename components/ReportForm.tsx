@@ -16,7 +16,7 @@ function initial(d: Defaults, today: string): ReportData {
     performance: '', atmosphere: '', mainGoal: d.mainGoal, goalAchieved: '', goalSummary: '',
     participation: -1, vulnerability: -1,
     stoodOut: emptyHL(), lessInteractive: emptyHL(), deepQuestion: emptyHL(), neededExplanation: emptyHL(),
-    pastoralCare: '', visits: [], challenge: { ids: [], note: '' },
+    pastoralCare: '', pastoralCareIds: [], visits: [], challenge: { ids: [], note: '' },
     nextAgenda: '', improve: '', otherInfo: '', signature: d.signature,
   };
 }
@@ -168,8 +168,8 @@ export default function ReportForm({ shepherdId, group, today, defaults }: { she
       </Section>
 
       <Section n={6} title="Post-meeting agenda">
-        <label className="field"><span>Who will be doing online Pastoral Care with you this week?</span>
-          <input value={f.pastoralCare} onChange={(e) => set('pastoralCare', e.target.value)} /></label>
+        <PeoplePick label="Who will be doing online Pastoral Care with you this week?" people={group} value={{ ids: f.pastoralCareIds ?? [], note: f.pastoralCare }}
+          onChange={(v) => setF((p) => ({ ...p, pastoralCareIds: v.ids, pastoralCare: v.note }))} />
 
         <div className="field mt-s">
           <span>Who needs to be visited this week, and when?</span>

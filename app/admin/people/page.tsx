@@ -44,6 +44,7 @@ export default async function People({ searchParams }: { searchParams: Promise<{
                       <td>{g ? <span className="count">{g}</span> : <span className="muted">—</span>}</td>
                       <td><div className="row-actions">
                         <Link className="btn small" href={`/admin/people/new?under=${p.id}`}>+ Add</Link>
+                        {p.level >= 1 && <Link className="btn small ghost" href={`/admin/members/${p.id}`}>Profile</Link>}
                         <Link className="btn small" href={`/admin/people/${p.id}`}>Edit</Link>
                       </div></td>
                     </tr>

@@ -32,7 +32,7 @@ export default async function EditPerson({ params, searchParams }: { params: Pro
     <>
       <Header title={dashTitle('super')} who={dashWho('super')} nav={navFor('super')} />
       <main className="page narrow">
-        <Link href={`/admin/people#p${p.id}`}>← People</Link>
+        <div className="row between"><Link href={`/admin/people#p${p.id}`}>← People</Link>{p.level >= 1 && <Link className="btn small" href={`/admin/members/${p.id}`}>View profile</Link>}</div>
         <div className="page-head"><p className="eyebrow">{p.active ? 'Edit person' : 'Removed'}</p><h1>{titled(p)}</h1>
           <p className="muted">{boss ? <>In {titled(boss)}&rsquo;s group</> : 'Top of the church'}{group.length > 0 && <> · leads {group.length} {group.length === 1 ? 'person' : 'people'}</>}</p></div>
         <Flash ok={sp.ok} err={sp.err} />

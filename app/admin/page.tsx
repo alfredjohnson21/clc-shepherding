@@ -75,7 +75,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                     <div className="challenge-who">
                       {r.data.challenge.ids.map((id) => {
                         const m = person(id);
-                        return <span key={id} className="pill">{nameOf(id)}{m?.phone && <a href={`tel:${m.phone}`} className="tel"> {m.phone}</a>}</span>;
+                        return <span key={id} className="pill"><Link href={`/admin/members/${id}`}>{nameOf(id)}</Link>{m?.phone && <a href={`tel:${m.phone}`} className="tel"> {m.phone}</a>}</span>;
                       })}
                     </div>
                     {r.data.challenge.note && <p className="challenge-note">{r.data.challenge.note}</p>}
@@ -102,7 +102,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                       const sent = reports.find((r) => r.shepherd_id === m.id);
                       return (
                         <li key={m.id}>
-                          <span>{m.name} <small className="muted">{CATEGORY_LABEL[m.category]}</small></span>
+                          <span><Link href={`/admin/members/${m.id}`} className="name-link">{m.name}</Link> <small className="muted">{CATEGORY_LABEL[m.category]}</small></span>
                           {sent ? <Link href={`/admin/reports/${sent.id}`} className="sent">✓ Sent</Link>
                             : m.phone ? <a href={`tel:${m.phone}`} className="tel">{m.phone}</a> : <span className="muted small">no phone</span>}
                         </li>
@@ -122,7 +122,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                   const m = person(x.memberId)!;
                   return (
                     <li key={x.memberId}>
-                      <span>{m.name} <small className="muted">under {nameOf(x.shepherdId)}</small></span>
+                      <span><Link href={`/admin/members/${m.id}`} className="name-link">{m.name}</Link> <small className="muted">under {nameOf(x.shepherdId)}</small></span>
                       <span className="row gap-s">
                         <span className={`streak s${Math.min(x.streak, 4)}`}>{x.streak} weeks</span>
                         {m.phone && <a href={`tel:${m.phone}`} className="tel">{m.phone}</a>}
@@ -138,7 +138,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               <ul className="plain-list">
                 {visits.map((v, i) => (
                   <li key={i}>
-                    <span>{v.id ? nameOf(v.id) : v.name}{v.note && <small className="muted"> — {v.note}</small>}</span>
+                    <span>{v.id ? <Link href={`/admin/members/${v.id}`} className="name-link">{nameOf(v.id)}</Link> : v.name}{v.note && <small className="muted"> — {v.note}</small>}</span>
                     <span className="muted small">{v.day || 'Day not set'} · {nameOf(v.shepherdId)}</span>
                   </li>
                 ))}
