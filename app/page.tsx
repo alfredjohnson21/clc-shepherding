@@ -8,7 +8,8 @@ export default async function Home() {
   const s = await getSession();
   if (s?.kind === 'shepherd') redirect('/report');
   if (await getRole()) redirect('/admin');
-  const options = (await getTree()).shepherds.map((p) => ({ id: p.id, label: p.role ? `${p.name} (${p.role})` : p.name }));
+  // Only tribe heads (branch heads, level 1) are listed. Other group leaders sign in with their personal link.
+  const options = (await getTree()).shepherds.filter((p) => p.level === 1).map((p) => ({ id: p.id, label: p.role ? `${p.name} (${p.role})` : p.name }));
   return (
     <main className="landing">
       <section className="landing-card">
