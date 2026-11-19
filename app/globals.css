@@ -415,3 +415,12 @@ a.cell:hover { outline: 2px solid var(--navy-2); outline-offset: 1px; }
 .timeline .tl-note { border-left-color: #7c3aed; }
 .timeline .tl-milestone { border-left-color: var(--ok); background: var(--ok-soft); }
 @media (max-width: 560px) { .timeline li { grid-template-columns: 1fr auto; } .tl-date { grid-column: 1 / -1; } }
+
+/* ---------- Type-to-search name picker (sign-in) ---------- */
+.name-picker { position: relative; }
+.name-picker label span { font-weight: 600; font-size: 13.5px; color: var(--ink-2); }
+.name-list { position: absolute; z-index: 20; top: 100%; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none; max-height: 260px; overflow-y: auto;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.name-list li { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 15px; }
+.name-list li.on { background: var(--navy-soft); color: var(--navy); }
+.name-list li.none { cursor: default; color: var(--muted); }
