@@ -66,17 +66,6 @@
   "shadow": false
  },
  {
-  "id": 7,
-  "name": "Esther Nyarkoah",
-  "role": "",
-  "phone": "0535055554",
-  "category": "member",
-  "level": 3,
-  "reportsToId": 3,
-  "branchId": 2,
-  "shadow": false
- },
- {
   "id": 8,
   "name": "Emmanuel Odonkor",
   "role": "Deacon",
@@ -268,17 +257,6 @@
   "name": "Emelia Akua Gamor",
   "role": "",
   "phone": "0536117967",
-  "category": "member",
-  "level": 3,
-  "reportsToId": 21,
-  "branchId": 20,
-  "shadow": false
- },
- {
-  "id": 26,
-  "name": "Gyabeng King Solomon",
-  "role": "",
-  "phone": "0542599171",
   "category": "member",
   "level": 3,
   "reportsToId": 21,
@@ -610,10 +588,10 @@
   "role": "",
   "phone": "0245616843",
   "category": "member",
-  "level": 3,
-  "reportsToId": 55,
+  "level": 2,
+  "reportsToId": 54,
   "branchId": 54,
-  "shadow": true
+  "shadow": false
  },
  {
   "id": 57,
@@ -1504,6 +1482,105 @@
   "level": 2,
   "reportsToId": 128,
   "branchId": 128,
+  "shadow": false
+ },
+ {
+  "id": 138,
+  "name": "Precious Lawer",
+  "role": "",
+  "phone": "0530583357",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 21,
+  "branchId": 20,
+  "shadow": false
+ },
+ {
+  "id": 139,
+  "name": "Happy",
+  "role": "",
+  "phone": "0593670086",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 34,
+  "branchId": 20,
+  "shadow": false
+ },
+ {
+  "id": 140,
+  "name": "Leticia",
+  "role": "",
+  "phone": "",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 34,
+  "branchId": 20,
+  "shadow": false
+ },
+ {
+  "id": 141,
+  "name": "Emmanuel Nyanbe",
+  "role": "",
+  "phone": "0536716994",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 55,
+  "branchId": 54,
+  "shadow": false
+ },
+ {
+  "id": 142,
+  "name": "Kersia Adamkie Odonkor",
+  "role": "",
+  "phone": "0241125862",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 56,
+  "branchId": 54,
+  "shadow": false
+ },
+ {
+  "id": 143,
+  "name": "Freda",
+  "role": "",
+  "phone": "0544174954",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 56,
+  "branchId": 54,
+  "shadow": false
+ },
+ {
+  "id": 144,
+  "name": "Thelma",
+  "role": "",
+  "phone": "0242605749",
+  "category": "member",
+  "level": 3,
+  "reportsToId": 61,
+  "branchId": 54,
+  "shadow": false
+ },
+ {
+  "id": 145,
+  "name": "Godfred",
+  "role": "Pastor",
+  "phone": "0557485499",
+  "category": "pastor",
+  "level": 2,
+  "reportsToId": 77,
+  "branchId": 77,
+  "shadow": false
+ },
+ {
+  "id": 146,
+  "name": "Sylvester",
+  "role": "Pastor",
+  "phone": "0599344724",
+  "category": "pastor",
+  "level": 2,
+  "reportsToId": 99,
+  "branchId": 99,
   "shadow": false
  }
 ]
