@@ -5,7 +5,7 @@ import { requireSuper, resetViewToken } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { CATEGORIES, freeUsername, getTree, type Category } from '@/lib/tree';
 import { readDetails, isDate } from '@/lib/profileForm';
-import { findByPhone, type ProfileRequest } from '@/lib/selfserve';
+import { findByPhone, normPhone, type ProfileRequest } from '@/lib/selfserve';
 import { CARE_STATUS, NOTE_KINDS } from '@/lib/types';
 
 const str = (f: FormData, k: string, max = 200) => String(f.get(k) ?? '').trim().slice(0, max);
@@ -236,4 +236,27 @@ export async function applyRequest(f: FormData) {
   await query('UPDATE member_profiles SET details = $2::jsonb, updated_at = now() WHERE person_id = $1', [personId, JSON.stringify(details)]);
   await query("UPDATE profile_requests SET status = 'applied', person_id = $2, decided_at = now(), updated_at = now() WHERE id = $1", [r.id, personId]);
   done(r.kind === 'update' ? `${name}'s profile was updated.` : `${name} was added to ${tree.nameOf(Number(f.get('reportsTo')))}'s group.`);
+}
+
+/** Saves the numbers typed on the "Missing phone numbers" page. Empty boxes are skipped. */
+export async function savePhones(f: FormData) {
+  await requireSuper();
+  const tree = await getTree();
+  const bad: string[] = [];
+  let saved = 0;
+  for (const [key, value] of f.entries()) {
+    const m = /^phone_(\d+)$/.exec(key);
+    const raw = typeof value === 'string' ? value.trim() : '';
+    if (!m || !raw) continue;
+    const p = tree.person(Number(m[1]));
+    if (!p?.active || p.phone.trim()) continue;
+    const phone = normPhone(raw);
+    if (!phone) { bad.push(p.name); continue; }
+    await query('UPDATE people SET phone = $2, updated_at = now() WHERE id = $1', [p.id, phone]);
+    saved++;
+  }
+  revalidatePath('/', 'layout');
+  const msg = `${saved} phone number${saved === 1 ? '' : 's'} saved.`;
+  if (bad.length) back('/admin/phones', `${msg} Please check the number${bad.length === 1 ? '' : 's'} for ${bad.join(', ')} (e.g. 0241234567).`);
+  back('/admin/phones', msg, 'ok');
 }

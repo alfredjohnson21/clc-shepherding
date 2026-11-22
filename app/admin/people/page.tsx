@@ -14,6 +14,7 @@ export default async function People({ searchParams }: { searchParams: Promise<{
   const tree = await getTree();
   const rows = treeOrder(tree);
   const removed = tree.all.filter((p) => !p.active);
+  const noPhone = tree.people.filter((p) => p.level >= 1 && !p.phone.trim()).length;
   return (
     <>
       <Header title={dashTitle('super')} who={dashWho('super')} nav={navFor('super')} />
@@ -21,7 +22,10 @@ export default async function People({ searchParams }: { searchParams: Promise<{
         <div className="row between">
           <div className="page-head"><p className="eyebrow">Super admin</p><h1>People &amp; groups</h1>
             <p className="muted" style={{ maxWidth: 640 }}>{tree.people.length} people · {tree.shepherds.length} group leaders. Anyone with people under them is a group leader and gets a sign-in link automatically. Use <b>+ Add</b> on a row to add someone to that person&rsquo;s group.</p></div>
-          <Link href="/admin/people/new" className="btn primary">Add a person</Link>
+          <div className="row gap-s">
+            {noPhone > 0 && <Link href="/admin/phones" className="btn">Missing phones <span className="nav-badge">{noPhone}</span></Link>}
+            <Link href="/admin/people/new" className="btn primary">Add a person</Link>
+          </div>
         </div>
         <Flash ok={sp.ok} err={sp.err} />
         <section className="card">

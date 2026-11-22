@@ -452,3 +452,12 @@ fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
 .qr svg { width: 100%; height: auto; display: block; }
 .qr-url { font-family: ui-monospace, monospace; font-size: 14px; color: var(--ink-2); word-break: break-all; }
 @media print { .qr-poster { border: 0; box-shadow: none; } .qr { width: 420px; } }
+
+/* ---------- Missing phone numbers ---------- */
+.phone-list { list-style: none; margin: 0; padding: 0; }
+.phone-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--line-2); flex-wrap: wrap; }
+.phone-list li:first-child { border-top: 0; }
+.phone-list label { display: flex; flex-direction: column; min-width: 0; flex: 1 1 220px; }
+.phone-input { display: flex; flex-direction: column; gap: 2px; flex: 0 1 220px; min-width: 0; }
+.phone-input input.suggested { background: var(--gold-soft); border-color: var(--gold-line); }
+.save-bar { position: sticky; bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; box-shadow: var(--shadow-lg); }
