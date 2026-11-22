@@ -1,5 +1,5 @@
 export const PERFORMANCE = [
-  { value: 'excellent', label: 'Excellent', hint: 'High energy, deep vulnerability, great discourse' },
+  { value: 'excellent', label: 'Excellent', hint: 'High energy, open, great discourse' },
   { value: 'good', label: 'Good', hint: 'Steady engagement, productive discussion' },
   { value: 'fair', label: 'Fair', hint: 'Low engagement, conversations felt forced' },
   { value: 'difficult', label: 'Difficult', hint: 'High conflict, extreme distractions, low participation' },
