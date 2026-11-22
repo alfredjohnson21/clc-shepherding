@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { requireDashboard } from '@/lib/auth';
+import { pendingCount } from '@/lib/selfserve';
 import { absenceStreaks, byBranch, hasChallenge, loadWeeks, summarize } from '@/lib/stats';
 import { CATEGORIES, CATEGORY_LABEL, getTree, titled, type Person } from '@/lib/tree';
 
@@ -38,6 +39,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const streaks = absenceStreaks(tree, weeks, byWeek);
   const visits = reports.flatMap((r) => r.data.visits.map((v) => ({ ...v, shepherdId: r.shepherd_id, reportId: r.id })));
   const trend = weeks.map((w) => ({ w, ...summarize(byWeek.get(w)!) }));
+  const requests = role === 'super' ? await pendingCount() : 0;
 
   return (
     <>
@@ -54,6 +56,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             {ws < current && <Link className="btn small ghost" href={`/admin?week=${addDays(ws, 7)}`}>Next →</Link>}
           </div>
         </div>
+
+        {requests > 0 && (
+          <Link href="/admin/requests" className="card notice-bar">
+            <b>{requests} profile request{requests === 1 ? '' : 's'}</b> from members waiting for your approval <span>Review →</span>
+          </Link>
+        )}
 
         <section className="kpis">
           <Kpi label="Reports received" value={`${s.n}`} sub={`of ${shepherds.length} shepherds`} meter={s.n / shepherds.length} />

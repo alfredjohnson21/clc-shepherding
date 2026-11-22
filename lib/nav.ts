@@ -6,7 +6,7 @@ export function navFor(role: Role) {
     { href: '/admin/members', label: 'Members' },
     { href: '/admin/reports', label: 'All reports' },
   ];
-  if (role === 'super') nav.push({ href: '/admin/people', label: 'People' }, { href: '/admin/codes', label: 'Sign-in links' });
+  if (role === 'super') nav.push({ href: '/admin/requests', label: 'Requests' }, { href: '/admin/people', label: 'People' }, { href: '/admin/codes', label: 'Sign-in links' });
   return nav;
 }
 

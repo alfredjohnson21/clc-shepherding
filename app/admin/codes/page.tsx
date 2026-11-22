@@ -37,6 +37,11 @@ export default async function Codes({ searchParams }: { searchParams: Promise<{ 
         </div>
         <Flash ok={sp.ok} err={sp.err} />
 
+        <section className="card no-print">
+          <h2 className="h2">Member self-update QR code</h2>
+          <p className="muted">Members scan it, enter their phone number, and update their own profile after you approve. <Link href="/admin/qr">Open the printable QR poster</Link> · <Link href="/admin/requests">See requests</Link></p>
+        </section>
+
         <section className="card view-link">
           <h2 className="h2">Head Pastor&rsquo;s link <span className="count">view only</span></h2>
           <p className="muted">{papa ? titled(papa) : 'The Head Pastor'} opens this link and goes straight to the dashboard. No password. He can read every report but cannot change anything or see passwords.</p>

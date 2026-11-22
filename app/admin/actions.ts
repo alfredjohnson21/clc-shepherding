@@ -4,7 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { requireSuper, resetViewToken } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { CATEGORIES, freeUsername, getTree, type Category } from '@/lib/tree';
-import { CARE_STATUS, MILESTONES, NOTE_KINDS, PERSONAL_FIELDS, type ProfileDetails } from '@/lib/types';
+import { readDetails, isDate } from '@/lib/profileForm';
+import { findByPhone, type ProfileRequest } from '@/lib/selfserve';
+import { CARE_STATUS, NOTE_KINDS } from '@/lib/types';
 
 const str = (f: FormData, k: string, max = 200) => String(f.get(k) ?? '').trim().slice(0, max);
 const back = (path: string, msg: string, kind: 'err' | 'ok' = 'err') =>
@@ -116,7 +118,6 @@ export async function resetHeadPastorLink() {
   back('/admin/codes', 'A new Head Pastor link was made. The old link no longer works — send him the new one.', 'ok');
 }
 
-const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
 
 /** Makes sure a member_profiles row exists, so the updates below have something to change. */
 const ensureProfile = (id: number) => query('INSERT INTO member_profiles (person_id) VALUES ($1) ON CONFLICT (person_id) DO NOTHING', [id]);
@@ -132,20 +133,9 @@ export async function saveProfile(f: FormData) {
   const p = await profileTarget(f);
   if (!p) return back('/admin/members', 'That member was not found.');
   const path = `/admin/members/${p.id}/edit`;
-  const details: ProfileDetails = {};
-  for (const fld of PERSONAL_FIELDS) {
-    const v = str(f, fld.key, 120);
-    if (!v) continue;
-    if ('date' in fld && !isDate(v)) return back(path, `Please enter a valid date for ${fld.label.toLowerCase()}.`);
-    if ('options' in fld && !(fld.options as readonly string[]).includes(v)) return back(path, `Please choose a ${fld.label.toLowerCase()} from the list.`);
-    details[fld.key] = v;
-  }
-  for (const m of MILESTONES) {
-    const v = str(f, m.key, 10);
-    if (!v) continue;
-    if (!isDate(v)) return back(path, `Please enter a valid date for "${m.label}".`);
-    details[m.key] = v;
-  }
+  const r = readDetails(f);
+  if ('error' in r) return back(path, r.error);
+  const { details } = r;
   await ensureProfile(p.id);
   await query('UPDATE member_profiles SET details = $2::jsonb, updated_at = now() WHERE person_id = $1', [p.id, JSON.stringify(details)]);
   revalidatePath('/admin/members', 'layout');
@@ -187,4 +177,63 @@ export async function deleteCareNote(f: FormData) {
   const [r] = await query<{ person_id: number }>('DELETE FROM care_notes WHERE id = $1 RETURNING person_id', [id]);
   revalidatePath('/admin/members', 'layout');
   back(r ? `/admin/members/${r.person_id}` : '/admin/members', 'Note deleted.', 'ok');
+}
+
+/* ---------- Self-service profile requests (QR code) ---------- */
+
+async function loadReq(f: FormData) {
+  const [r] = await query<ProfileRequest>('SELECT * FROM profile_requests WHERE id = $1', [Number(f.get('id'))]);
+  if (r && typeof r.proposed === 'string') r.proposed = JSON.parse(r.proposed);
+  return r;
+}
+const done = (msg: string) => { revalidatePath('/admin', 'layout'); back('/admin/requests', msg, 'ok'); };
+
+/** Lets the phone that asked see and edit this person's profile. */
+export async function grantAccess(f: FormData) {
+  await requireSuper();
+  const r = await loadReq(f);
+  if (!r || r.status !== 'access_pending') return back('/admin/requests', 'That request was already handled.');
+  const personId = Number(f.get('personId'));
+  const tree = await getTree();
+  if (!findByPhone(tree, r.phone).some((p) => p.id === personId)) return back('/admin/requests', 'Please choose who this phone belongs to.');
+  await query("UPDATE profile_requests SET status = 'editing', person_id = $2, updated_at = now() WHERE id = $1", [r.id, personId]);
+  done(`${tree.nameOf(personId)} can now update their profile on their phone.`);
+}
+
+export async function rejectRequest(f: FormData) {
+  await requireSuper();
+  const r = await loadReq(f);
+  if (!r || !['access_pending', 'review_pending', 'editing'].includes(r.status)) return back('/admin/requests', 'That request was already handled.');
+  await query("UPDATE profile_requests SET status = 'rejected', decided_at = now(), updated_at = now() WHERE id = $1", [r.id]);
+  done('Request declined.');
+}
+
+/** Saves the submitted changes (update), or adds the new person to the chosen group (join). */
+export async function applyRequest(f: FormData) {
+  await requireSuper();
+  const r = await loadReq(f);
+  if (!r || r.status !== 'review_pending' || !r.proposed) return back('/admin/requests', 'That request was already handled.');
+  const { name, phone, details } = r.proposed;
+  const tree = await getTree();
+  let personId: number;
+  if (r.kind === 'update') {
+    const p = r.person_id != null ? tree.person(r.person_id) : undefined;
+    if (!p) return back('/admin/requests', 'That person is no longer in the system. Decline the request instead.');
+    await query('UPDATE people SET name = $2, phone = $3, updated_at = now() WHERE id = $1', [p.id, name, phone || p.phone]);
+    personId = p.id;
+  } else {
+    const boss = tree.person(Number(f.get('reportsTo')));
+    if (!boss?.active) return back('/admin/requests', 'Please choose which group to add them to.');
+    const username = await freeUsername(name);
+    const [row] = await query<{ id: number }>(
+      `INSERT INTO people (id, name, role, phone, category, reports_to_id, username)
+       SELECT COALESCE(MAX(id), 0) + 1, $1, '', $2, 'member', $3, $4 FROM people RETURNING id`,
+      [name, phone, boss.id, username],
+    );
+    personId = row.id;
+  }
+  await ensureProfile(personId);
+  await query('UPDATE member_profiles SET details = $2::jsonb, updated_at = now() WHERE person_id = $1', [personId, JSON.stringify(details)]);
+  await query("UPDATE profile_requests SET status = 'applied', person_id = $2, decided_at = now(), updated_at = now() WHERE id = $1", [r.id, personId]);
+  done(r.kind === 'update' ? `${name}'s profile was updated.` : `${name} was added to ${tree.nameOf(Number(f.get('reportsTo')))}'s group.`);
 }

@@ -47,6 +47,19 @@ CREATE TABLE IF NOT EXISTS care_notes (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS care_notes_person_idx ON care_notes (person_id);
+CREATE TABLE IF NOT EXISTS profile_requests (
+  id SERIAL PRIMARY KEY,
+  token TEXT NOT NULL UNIQUE,
+  kind TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  person_id INTEGER,
+  status TEXT NOT NULL,
+  proposed JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  decided_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS profile_requests_status_idx ON profile_requests (status);
 `;
 
 const g = globalThis as unknown as { __db?: Promise<Runner> };
